@@ -1,0 +1,97 @@
+"""
+nutstore_folder_scanner v1.2.2
+
+工作流程:
+    1. 输入你要遍历的主目录
+    2. 输入你要标记的文件(夹)名(否则将标记全部开头为"."的名字)
+    3. 输入你要标记的文件数阈值(比如输入500,则表示如果某个文件夹中有超过500个文件,则该文件夹所在的路径会被标记)
+
+更新日志:
+    1.0
+        创建项目
+        增加对".idea"文件夹的扫描
+    1.1
+        增加对文件数大于500的文件夹的过滤
+    1.2
+        将项目名称由"idea_folder_scanner"改为"nutstore_folder_scanner"
+        增加对文件大小在500mb以上的文件的过滤
+        将阈值改为自定义阈值
+        对三类路径分开收集
+
+"""
+from common_utils import lk_logger, read_and_write_basic
+import os
+
+lk = lk_logger.main(__name__)
+collector = []
+
+
+def main(dir_in, match_name='.*', filenum_threshold=500, filesize_threshold=500):
+    """
+    
+    :param filesize_threshold:
+    :param dir_in:
+    :param match_name
+    :param filenum_threshold
+    :return:
+    """
+    lk.record_launch_func()
+    
+    assert ':' in dir_in
+    dir_in = dir_in.replace('/', '\\')
+    assert os.path.exists(dir_in)
+    
+    digger(dir_in, match_name, filenum_threshold)
+    read_and_write_basic.write_file(collector, '..\\temp\\out.txt')
+    
+    lk.divider_line()
+    if collector:
+        lk.prt('".idea" total found {}'.format(len(collector)))
+    else:
+        lk.prt('no collected path found')
+
+
+def digger(dir_in, match_name, match_threshold):
+    if dir_in[-1] != '\\':
+        dir_in += '\\'
+    
+    for i in os.listdir(dir_in):
+        curr_dir = dir_in + i
+        
+        if os.path.isdir(curr_dir):
+            if is_name_matched(i, match_name):
+                lk.prt('[I2140] target name matched.\tpath name = {}'.format(curr_dir))
+                collector.append(curr_dir)
+            
+            elif is_too_many_files_inside(curr_dir, match_threshold):
+                lk.prt('[I2205] hit threshold.\tpath name = {}'.format(curr_dir))
+                collector.append(curr_dir)
+            
+            else:
+                lk.prt('digging deeper in "{}"'.format(curr_dir), count_up=True)
+                lk.total_count += 1
+                digger(curr_dir, match_name, match_threshold)
+
+
+# ----------------------------------------------------------------
+
+def is_name_matched(path, match_name):
+    if match_name == '.*':
+        return path[0] == match_name[0]
+    else:
+        return path == match_name
+
+
+def is_too_many_files_inside(dir_in, match_threshold):
+    return len(os.listdir(dir_in)) > match_threshold
+
+
+# ----------------------------------------------------------------
+
+if __name__ == '__main__':
+    # main(r'E:\com_qwings_data', '.idea')  # home
+    main(r'D:\likianta\lk_workspace\com_qwings_data', '.idea')  # work
+    
+    lk.print_important_msg()
+    lk.over()
+    lk.dump_log()

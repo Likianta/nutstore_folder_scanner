@@ -1,0 +1,6 @@
+E:\com_qwings_data\cnas_instr_spider\dustbin\abandon_decideStd
+E:\com_qwings_data\cnas_instr_spider\dustbin\abandon_size100
+E:\com_qwings_data\cnas_instr_spider\output
+E:\com_qwings_data\cnas_instr_spider\archived
+E:\com_qwings_data\组织部数据处理\组织部专利筛选\批次任务
+E:\com_qwings_data\组织部数据处理\组织部专利筛选\output
